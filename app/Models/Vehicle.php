@@ -17,6 +17,8 @@ class Vehicle extends Model
         'model',
         'registration_number',
         'production_year',
+        'mileage',
+        'color',
         'daily_price',
         'transmission',
         'fuel_type',
@@ -29,6 +31,7 @@ class Vehicle extends Model
     {
         return [
             'production_year' => 'integer',
+            'mileage' => 'integer',
             'daily_price' => 'decimal:2',
             'seats' => 'integer',
         ];

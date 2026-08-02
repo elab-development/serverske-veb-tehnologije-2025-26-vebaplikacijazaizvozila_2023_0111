@@ -146,6 +146,16 @@ class VehicleController extends Controller
                 'integer',
                 'between:1950,' . (date('Y') + 1),
             ],
+            'mileage' => [
+                'sometimes',
+                'integer',
+                'min:0',
+            ], 
+            'color' => [
+                'nullable',
+                'string',
+                'max:50',
+            ],
             'daily_price' => [
                 'required',
                 'numeric',
@@ -232,6 +242,18 @@ class VehicleController extends Controller
                 'required',
                 'integer',
                 'between:1950,' . (date('Y') + 1),
+            ],
+            'mileage' => [
+                'sometimes',
+                'required',
+                'integer',
+                'min:0',
+            ],
+            'color' => [
+                'sometimes',
+                'nullable',
+                'string',
+                'max:50',
             ],
             'daily_price' => [
                 'sometimes',
