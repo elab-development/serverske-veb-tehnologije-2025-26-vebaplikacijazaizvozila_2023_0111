@@ -1,66 +1,444 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Vehicle Rental API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+REST API aplikacija za upravljanje iznajmljivanjem vozila, izrađena u Laravel 11 okruženju.
 
-## About Laravel
+Aplikacija omogućava upravljanje kategorijama i vozilima, registraciju i autentifikaciju korisnika, rezervaciju vozila, kontrolu pristupa na osnovu korisničkih uloga, filtriranje i paginaciju, kao i postavljanje fotografija vozila.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Autori
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Ime i prezime: `Vukašin Sandić`
+- Broj indeksa: `2023/0111`
+- Ime i prezime: `Deespot Mijajlović`
+- Broj indeksa: `2023/0341`
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Korišćene tehnologije
 
-## Learning Laravel
+- PHP
+- Laravel 11
+- Laravel Sanctum
+- MySQL / MariaDB
+- Eloquent ORM
+- XAMPP
+- Postman
+- Git i GitHub
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Glavne funkcionalnosti
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Aplikacija podržava:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- registraciju korisnika;
+- prijavljivanje i odjavljivanje;
+- autentifikaciju pomoću Sanctum tokena;
+- tri korisničke uloge;
+- CRUD operacije nad kategorijama;
+- CRUD operacije nad vozilima;
+- filtriranje, sortiranje i paginaciju vozila;
+- kreiranje i pregled rezervacija;
+- proveru preklapanja rezervacija;
+- automatsko računanje ukupne cene;
+- promenu statusa rezervacije;
+- otkazivanje rezervacije;
+- upload i brisanje fotografija vozila;
+- validaciju zahteva;
+- JSON odgovore i odgovarajuće HTTP statuse.
 
-## Laravel Sponsors
+## Korisničke uloge
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Admin
 
-### Premium Partners
+Administrator može:
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+- pregledati sve podatke;
+- dodavati, menjati i brisati kategorije;
+- dodavati, menjati i brisati vozila;
+- pregledati sve rezervacije;
+- menjati status rezervacija;
+- postavljati i brisati fotografije vozila.
 
-## Contributing
+### Employee
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Zaposleni može:
 
-## Code of Conduct
+- pregledati sve podatke;
+- upravljati kategorijama i vozilima;
+- pregledati sve rezervacije;
+- menjati status rezervacija;
+- postavljati i brisati fotografije vozila.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Customer
 
-## Security Vulnerabilities
+Korisnik može:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- pregledati kategorije i vozila;
+- filtrirati i sortirati vozila;
+- kreirati rezervaciju;
+- pregledati samo svoje rezervacije;
+- otkazati svoju rezervaciju.
 
-## License
+Customer ne može da upravlja kategorijama, vozilima ili statusima rezervacija.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Modeli i veze
+
+Aplikacija koristi sledeće modele:
+
+- `User`
+- `Category`
+- `Vehicle`
+- `Reservation`
+- `VehicleImage`
+
+Veze između modela:
+
+```text
+Category  1 ─── N  Vehicle
+Vehicle   1 ─── N  Reservation
+User      1 ─── N  Reservation
+Vehicle   1 ─── N  VehicleImage
+```
+
+Jedna kategorija može imati više vozila.
+
+Jedno vozilo pripada jednoj kategoriji i može imati više rezervacija i fotografija.
+
+Jedan korisnik može imati više rezervacija.
+
+## Instalacija projekta
+
+### 1. Kloniranje repozitorijuma
+
+```bash
+git clone https://github.com/elab-development/serverske-veb-tehnologije-2025-26-vebaplikacijazaizvozila_2023_0111.git
+```
+
+Prelazak u folder projekta:
+
+```bash
+cd serverske-veb-tehnologije-2025-26-vebaplikacijazaizvozila_2023_0111
+```
+
+### 2. Instalacija PHP paketa
+
+```bash
+composer install
+```
+
+### 3. Kreiranje `.env` fajla
+
+Na Windows sistemu:
+
+```powershell
+copy .env.example .env
+```
+
+Na Linux ili macOS sistemu:
+
+```bash
+cp .env.example .env
+```
+
+### 4. Generisanje aplikacionog ključa
+
+```bash
+php artisan key:generate
+```
+
+### 5. Podešavanje baze
+
+U `.env` fajlu podesiti:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=vehicle_rental_api
+DB_USERNAME=root
+DB_PASSWORD=
+DB_CHARSET=utf8mb4
+DB_COLLATION=utf8mb4_unicode_ci
+```
+
+Pre pokretanja migracija potrebno je kreirati bazu:
+
+```text
+vehicle_rental_api
+```
+
+### 6. Pokretanje migracija i seedera
+
+```bash
+php artisan migrate --seed
+```
+
+### 7. Kreiranje javnog linka za fotografije
+
+```bash
+php artisan storage:link
+```
+
+### 8. Pokretanje aplikacije
+
+```bash
+php artisan serve
+```
+
+API će biti dostupan na adresi:
+
+```text
+http://127.0.0.1:8000/api
+```
+
+## Demo korisnici
+
+Seeder kreira sledeće testne naloge:
+
+| Uloga | Email | Lozinka |
+|---|---|---|
+| Admin | `admin@example.com` | `password123` |
+| Employee | `employee@example.com` | `password123` |
+| Customer | `customer@example.com` | `password123` |
+
+Nalozi služe isključivo za demonstraciju i lokalno testiranje aplikacije.
+
+## Autentifikacija
+
+Aplikacija koristi Laravel Sanctum Bearer tokene.
+
+Nakon uspešnog prijavljivanja korisnik dobija:
+
+```json
+{
+    "access_token": "GENERISANI_TOKEN",
+    "token_type": "Bearer"
+}
+```
+
+Token se kod zaštićenih zahteva šalje kroz zaglavlje:
+
+```text
+Authorization: Bearer GENERISANI_TOKEN
+```
+
+Tokeni se ne čuvaju u repozitorijumu ili dokumentaciji.
+
+## API rute
+
+### Autentifikacija
+
+| Metoda | Ruta | Opis | Pristup |
+|---|---|---|---|
+| POST | `/api/register` | Registracija korisnika | Javno |
+| POST | `/api/login` | Prijavljivanje | Javno |
+| GET | `/api/profile` | Podaci prijavljenog korisnika | Autentifikovan korisnik |
+| POST | `/api/logout` | Odjavljivanje | Autentifikovan korisnik |
+
+### Kategorije
+
+| Metoda | Ruta | Opis | Pristup |
+|---|---|---|---|
+| GET | `/api/categories` | Pregled kategorija | Svi prijavljeni |
+| GET | `/api/categories/{id}` | Pregled jedne kategorije | Svi prijavljeni |
+| POST | `/api/categories` | Dodavanje kategorije | Admin, Employee |
+| PATCH | `/api/categories/{id}` | Izmena kategorije | Admin, Employee |
+| DELETE | `/api/categories/{id}` | Brisanje kategorije | Admin, Employee |
+
+Kategorija koja sadrži vozila ne može biti obrisana.
+
+### Vozila
+
+| Metoda | Ruta | Opis | Pristup |
+|---|---|---|---|
+| GET | `/api/vehicles` | Pregled vozila | Svi prijavljeni |
+| GET | `/api/vehicles/{id}` | Pregled jednog vozila | Svi prijavljeni |
+| POST | `/api/vehicles` | Dodavanje vozila | Admin, Employee |
+| PATCH | `/api/vehicles/{id}` | Izmena vozila | Admin, Employee |
+| DELETE | `/api/vehicles/{id}` | Brisanje vozila | Admin, Employee |
+
+Vozilo koje ima rezervacije ne može biti obrisano.
+
+### Rezervacije
+
+| Metoda | Ruta | Opis | Pristup |
+|---|---|---|---|
+| GET | `/api/reservations` | Pregled rezervacija | Svi prijavljeni |
+| POST | `/api/reservations` | Kreiranje rezervacije | Svi prijavljeni |
+| GET | `/api/reservations/{id}` | Pregled rezervacije | Svi prijavljeni |
+| POST | `/api/reservations/{id}/cancel` | Otkazivanje rezervacije | Vlasnik, Admin, Employee |
+| PATCH | `/api/reservations/{id}/status` | Promena statusa | Admin, Employee |
+
+Customer vidi samo rezervacije koje pripadaju njegovom nalogu.
+
+### Fotografije vozila
+
+| Metoda | Ruta | Opis | Pristup |
+|---|---|---|---|
+| POST | `/api/vehicles/{vehicle}/images` | Upload fotografije | Admin, Employee |
+| DELETE | `/api/vehicle-images/{id}` | Brisanje fotografije | Admin, Employee |
+
+Upload se šalje kao `multipart/form-data`.
+
+Dozvoljeni formati:
+
+- JPG
+- JPEG
+- PNG
+- WEBP
+
+Maksimalna veličina fajla je 5 MB.
+
+## Filtriranje i paginacija
+
+Ruta:
+
+```text
+GET /api/vehicles
+```
+
+podržava sledeće parametre:
+
+| Parametar | Opis |
+|---|---|
+| `brand` | Filtriranje po marki |
+| `model` | Filtriranje po modelu |
+| `category_id` | Filtriranje po kategoriji |
+| `status` | Filtriranje po statusu |
+| `transmission` | Filtriranje po menjaču |
+| `fuel_type` | Filtriranje po gorivu |
+| `min_price` | Minimalna dnevna cena |
+| `max_price` | Maksimalna dnevna cena |
+| `sort_by` | Polje za sortiranje |
+| `sort_direction` | `asc` ili `desc` |
+| `per_page` | Broj rezultata po stranici |
+| `page` | Broj stranice |
+
+Primer:
+
+```text
+GET /api/vehicles?brand=Toyota&status=available&min_price=40&max_price=70
+```
+
+Primer sortiranja:
+
+```text
+GET /api/vehicles?sort_by=daily_price&sort_direction=asc
+```
+
+Primer paginacije:
+
+```text
+GET /api/vehicles?per_page=5&page=1
+```
+
+## Rezervacije i dostupnost
+
+Prilikom kreiranja rezervacije korisnik prosleđuje:
+
+```json
+{
+    "vehicle_id": 1,
+    "start_date": "2026-08-20",
+    "end_date": "2026-08-22"
+}
+```
+
+Aplikacija automatski:
+
+- proverava da li je vozilo dostupno;
+- proverava preklapanje sa postojećim rezervacijama;
+- računa broj dana;
+- izračunava ukupnu cenu;
+- postavlja početni status `pending`.
+
+Aktivne rezervacije sa statusom `pending` ili `approved` blokiraju zauzeti period.
+
+Rezervacije sa statusom `cancelled` ili `completed` ne blokiraju novi termin.
+
+Dozvoljene promene statusa:
+
+```text
+pending → approved
+pending → cancelled
+approved → completed
+approved → cancelled
+```
+
+## HTTP statusi
+
+Aplikacija koristi sledeće najvažnije HTTP statuse:
+
+| Status | Značenje |
+|---|---|
+| `200 OK` | Zahtev uspešno izvršen |
+| `201 Created` | Resurs uspešno kreiran |
+| `401 Unauthorized` | Korisnik nije prijavljen |
+| `403 Forbidden` | Korisnik nema odgovarajuću ulogu |
+| `409 Conflict` | Konflikt podataka ili rezervacija |
+| `422 Unprocessable Content` | Greška validacije |
+| `404 Not Found` | Resurs nije pronađen |
+| `500 Internal Server Error` | Serverska greška |
+
+## Migracije
+
+Migracijama su implementirani:
+
+- kreiranje tabela;
+- primarni ključevi;
+- strani ključevi;
+- jedinstvena ograničenja;
+- indeksi;
+- podrazumevane vrednosti;
+- nullable kolone;
+- dodavanje novih kolona u postojeće tabele;
+- uklanjanje kolona prilikom rollback operacije.
+
+## Testiranje
+
+API je testiran pomoću Postmana.
+
+Provereni su:
+
+- registracija i login;
+- pristup zaštićenim rutama;
+- kontrola korisničkih uloga;
+- CRUD operacije;
+- validacija neispravnih zahteva;
+- paginacija i filtriranje;
+- sprečavanje preklapanja rezervacija;
+- promena i otkazivanje statusa;
+- upload fotografija;
+- ograničenja prilikom brisanja povezanih podataka.
+
+## Postman dokumentacija
+
+Snimci Postman zahteva biće priloženi u dokumentaciji projekta.
+
+Snimci prikazuju:
+
+- HTTP metodu i URL;
+- poslate podatke;
+- Bearer autentifikaciju;
+- JSON odgovor;
+- HTTP status;
+- datum testiranja.
+
+## Pokretanje testova
+
+```bash
+php artisan test
+```
+
+## Git istorija
+
+Projekat je razvijan kroz više smislenih commitova koji predstavljaju pojedinačne funkcionalne celine:
+
+- inicijalizacija Laravel projekta;
+- podešavanje Sanctum autentifikacije;
+- povezivanje sa bazom;
+- modeli i migracije;
+- korisničke uloge;
+- autentifikacija;
+- CRUD kategorija;
+- CRUD vozila;
+- rezervacije;
+- upload fotografija;
+- seederi;
+- dokumentacija.
