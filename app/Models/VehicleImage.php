@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class VehicleImage extends Model
 {
@@ -15,6 +16,9 @@ class VehicleImage extends Model
         'path',
         'is_primary',
     ];
+    protected $appends = [
+    'url',
+];
 
     protected function casts(): array
     {
@@ -27,4 +31,8 @@ class VehicleImage extends Model
     {
         return $this->belongsTo(Vehicle::class);
     }
+    public function getUrlAttribute(): string
+{
+    return Storage::disk('public')->url($this->path);
+}
 }

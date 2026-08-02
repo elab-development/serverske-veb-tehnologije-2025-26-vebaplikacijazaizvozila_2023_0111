@@ -5,6 +5,7 @@ use App\Http\Controllers\API\CategoryController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\VehicleController;
 use App\Http\Controllers\API\ReservationController;
+use App\Http\Controllers\API\VehicleImageController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -12,6 +13,15 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [AuthController::class, 'profile']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post(
+    '/vehicles/{vehicle}/images',
+    [VehicleImageController::class, 'store']
+)->middleware('role:admin,employee');
+
+Route::delete(
+    '/vehicle-images/{vehicleImage}',
+    [VehicleImageController::class, 'destroy']
+)->middleware('role:admin,employee');
 
     Route::apiResource('categories', CategoryController::class)
         ->only(['index', 'show']);
