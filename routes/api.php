@@ -3,6 +3,7 @@
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CategoryController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\API\VehicleController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -17,4 +18,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('categories', CategoryController::class)
         ->only(['store', 'update', 'destroy'])
         ->middleware('role:admin,employee');
+        
+    Route::apiResource('vehicles', VehicleController::class)
+    ->only(['index', 'show']);
+
+    Route::apiResource('vehicles', VehicleController::class)
+    ->only(['store', 'update', 'destroy'])
+    ->middleware('role:admin,employee');    
 });
