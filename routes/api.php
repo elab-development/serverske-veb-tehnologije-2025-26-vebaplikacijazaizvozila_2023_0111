@@ -53,6 +53,16 @@ Route::middleware('auth:sanctum')->group(function () {
         '/reservations/{reservation}',
         [ReservationController::class, 'show']
     );
+    
+    Route::put(
+        '/reservations/{reservation}',
+        [ReservationController::class, 'update']
+    );
+    
+    Route::get(
+        '/users/{user}/reservations',
+        [ReservationController::class, 'history']
+    );
 
     Route::post(
         '/reservations/{reservation}/cancel',
