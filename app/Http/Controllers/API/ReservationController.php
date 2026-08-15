@@ -9,6 +9,7 @@ use App\Models\Vehicle;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class ReservationController extends Controller
@@ -82,6 +83,7 @@ class ReservationController extends Controller
                 'message' => 'Vehicle is currently not available.',
             ], 409);
         }
+
         $hasOverlap = Reservation::query()
             ->where('vehicle_id', $vehicle->id)
             ->whereIn('status', ['pending', 'approved'])
@@ -98,7 +100,7 @@ class ReservationController extends Controller
         $startDate = Carbon::parse($validated['start_date']);
         $endDate = Carbon::parse($validated['end_date']);
 
-        $rentalDays = $startDate->diffInDays($endDate) + 1;
+        $rentalDays = (int) $startDate->diffInDays($endDate) + 1;
         $totalPrice = $rentalDays * (float) $vehicle->daily_price;
 
         $reservation = Reservation::create([
@@ -135,6 +137,113 @@ class ReservationController extends Controller
 
         return response()->json([
             'data' => $reservation->load([
+                'user:id,name,email,role',
+                'vehicle.category',
+            ]),
+        ]);
+    }
+
+    public function update(
+        Request $request,
+        Reservation $reservation
+    ): JsonResponse {
+        if (
+            $request->user()->hasRole(User::ROLE_CUSTOMER) &&
+            $reservation->user_id !== $request->user()->id
+        ) {
+            return response()->json([
+                'message' => 'Forbidden. This reservation does not belong to you.',
+            ], 403);
+        }
+
+        if ($reservation->status !== 'pending') {
+            return response()->json([
+                'message' => 'Only pending reservations can be modified.',
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'vehicle_id' => [
+                'required',
+                'integer',
+                'exists:vehicles,id',
+            ],
+            'start_date' => [
+                'required',
+                'date',
+                'after_or_equal:today',
+            ],
+            'end_date' => [
+                'required',
+                'date',
+                'after_or_equal:start_date',
+            ],
+        ]);
+
+        $result = DB::transaction(function () use (
+            $validated,
+            $reservation
+        ) {
+            $vehicle = Vehicle::query()
+                ->lockForUpdate()
+                ->findOrFail($validated['vehicle_id']);
+
+            if ($vehicle->status !== 'available') {
+                return [
+                    'error' => true,
+                    'status' => 409,
+                    'message' => 'Vehicle is currently not available.',
+                ];
+            }
+
+            $hasOverlap = Reservation::query()
+                ->where('vehicle_id', $vehicle->id)
+                ->where('id', '!=', $reservation->id)
+                ->whereIn('status', ['pending', 'approved'])
+                ->whereDate('start_date', '<=', $validated['end_date'])
+                ->whereDate('end_date', '>=', $validated['start_date'])
+                ->exists();
+
+            if ($hasOverlap) {
+                return [
+                    'error' => true,
+                    'status' => 409,
+                    'message' => 'Vehicle is already reserved for the selected period.',
+                ];
+            }
+
+            $startDate = Carbon::parse($validated['start_date']);
+            $endDate = Carbon::parse($validated['end_date']);
+
+            $rentalDays =
+                (int) $startDate->diffInDays($endDate) + 1;
+
+            $totalPrice =
+                $rentalDays * (float) $vehicle->daily_price;
+
+            $reservation->update([
+                'vehicle_id' => $vehicle->id,
+                'start_date' => $validated['start_date'],
+                'end_date' => $validated['end_date'],
+                'total_price' => $totalPrice,
+            ]);
+
+            return [
+                'error' => false,
+                'rental_days' => $rentalDays,
+            ];
+        });
+
+        if ($result['error']) {
+            return response()->json([
+                'message' => $result['message'],
+            ], $result['status']);
+        }
+
+        return response()->json([
+            'message' => 'Reservation updated successfully.',
+            'rental_days' => $result['rental_days'],
+            'data' => $reservation->fresh()->load([
                 'user:id,name,email,role',
                 'vehicle.category',
             ]),
@@ -222,110 +331,29 @@ class ReservationController extends Controller
             'data' => $reservation->fresh(),
         ]);
     }
+
     public function history(
-    Request $request,
-    User $user
-): JsonResponse {
-    if (
-        $request->user()->hasRole(User::ROLE_CUSTOMER) &&
-        $request->user()->id !== $user->id
-    ) {
-        return response()->json([
-            'message' => 'Forbidden. You can only view your own reservation history.',
-        ], 403);
+        Request $request,
+        User $user
+    ): JsonResponse {
+        if (
+            $request->user()->hasRole(User::ROLE_CUSTOMER) &&
+            $request->user()->id !== $user->id
+        ) {
+            return response()->json([
+                'message' => 'Forbidden. You can only view your own reservation history.',
+            ], 403);
+        }
+
+        $reservations = $user->reservations()
+            ->with('vehicle.category')
+            ->where(function ($query) {
+                $query->whereIn('status', ['completed', 'cancelled'])
+                    ->orWhereDate('end_date', '<', now()->toDateString());
+            })
+            ->orderByDesc('end_date')
+            ->paginate(10);
+
+        return response()->json($reservations);
     }
-
-    $reservations = $user->reservations()
-        ->with('vehicle.category')
-        ->where(function ($query) {
-            $query->whereIn('status', ['completed', 'cancelled'])
-                ->orWhereDate('end_date', '<', now()->toDateString());
-        })
-        ->orderByDesc('end_date')
-        ->paginate(10);
-
-    return response()->json($reservations);
-}
-public function update(
-    Request $request,
-    Reservation $reservation
-): JsonResponse {
-    if (
-        $request->user()->hasRole(User::ROLE_CUSTOMER) &&
-        $reservation->user_id !== $request->user()->id
-    ) {
-        return response()->json([
-            'message' => 'Forbidden. This reservation does not belong to you.',
-        ], 403);
-    }
-
-    if ($reservation->status !== 'pending') {
-        return response()->json([
-            'message' => 'Only pending reservations can be modified.',
-        ], 422);
-    }
-
-    $validated = $request->validate([
-        'vehicle_id' => [
-            'required',
-            'integer',
-            'exists:vehicles,id',
-        ],
-        'start_date' => [
-            'required',
-            'date',
-            'after_or_equal:today',
-        ],
-        'end_date' => [
-            'required',
-            'date',
-            'after_or_equal:start_date',
-        ],
-    ]);
-
-    $vehicle = Vehicle::findOrFail($validated['vehicle_id']);
-
-    if ($vehicle->status !== 'available') {
-        return response()->json([
-            'message' => 'Vehicle is currently not available.',
-        ], 409);
-    }
-
-    $hasOverlap = Reservation::query()
-        ->where('vehicle_id', $vehicle->id)
-        ->where('id', '!=', $reservation->id)
-        ->whereIn('status', ['pending', 'approved'])
-        ->whereDate('start_date', '<=', $validated['end_date'])
-        ->whereDate('end_date', '>=', $validated['start_date'])
-        ->exists();
-
-    if ($hasOverlap) {
-        return response()->json([
-            'message' => 'Vehicle is already reserved for the selected period.',
-        ], 409);
-    }
-
-    $startDate = Carbon::parse($validated['start_date']);
-    $endDate = Carbon::parse($validated['end_date']);
-
-    $rentalDays = (int) $startDate->diffInDays($endDate) + 1;
-
-    $totalPrice = $rentalDays * (float) $vehicle->daily_price;
-
-    $reservation->update([
-        'vehicle_id' => $vehicle->id,
-        'start_date' => $validated['start_date'],
-        'end_date' => $validated['end_date'],
-        'total_price' => $totalPrice,
-    ]);
-
-    return response()->json([
-        'message' => 'Reservation updated successfully.',
-        'rental_days' => $rentalDays,
-        'data' => $reservation->fresh()->load([
-            'user:id,name,email,role',
-            'vehicle.category',
-        ]),
-    ]);
-}
 }
