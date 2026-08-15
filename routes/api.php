@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\StatisticsController;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\VehicleController;
@@ -20,6 +21,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/profile', [AuthController::class, 'profile']);
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::get(
+        '/admin/statistics/rentals',
+        [StatisticsController::class, 'rentals']
+    )->middleware('role:admin');
 
     Route::post(
         '/vehicles/{vehicle}/images',
@@ -58,7 +64,7 @@ Route::middleware('auth:sanctum')->group(function () {
         '/reservations/{reservation}',
         [ReservationController::class, 'update']
     );
-    
+
     Route::get(
         '/users/{user}/reservations',
         [ReservationController::class, 'history']
