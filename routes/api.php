@@ -22,6 +22,10 @@ Route::get(
     '/external/vehicles/models/{make}',
     [ExternalVehicleController::class, 'modelsByMake']
 );
+Route::get(
+    '/external/exchange/{from}/{to}',
+    [ExternalVehicleController::class, 'exchangeRate']
+);
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/profile', [AuthController::class, 'profile']);
