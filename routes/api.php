@@ -78,6 +78,11 @@ Route::middleware('auth:sanctum')->group(function () {
         '/users/{user}/reservations',
         [ReservationController::class, 'history']
     );
+    
+    Route::get(
+        '/vehicles/{vehicle}/reservations',
+        [ReservationController::class, 'vehicleReservations']
+    );
 
     Route::post(
         '/reservations/{reservation}/cancel',
