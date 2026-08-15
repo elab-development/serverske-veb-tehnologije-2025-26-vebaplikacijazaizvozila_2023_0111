@@ -6,6 +6,7 @@ use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\VehicleController;
 use App\Http\Controllers\API\ReservationController;
 use App\Http\Controllers\API\VehicleImageController;
+use App\Http\Controllers\API\ExternalVehicleController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -16,7 +17,11 @@ Route::apiResource('categories', CategoryController::class)
 
 Route::apiResource('vehicles', VehicleController::class)
     ->only(['index', 'show']);
-
+    
+Route::get(
+    '/external/vehicles/models/{make}',
+    [ExternalVehicleController::class, 'modelsByMake']
+);
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/profile', [AuthController::class, 'profile']);
