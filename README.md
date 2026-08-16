@@ -442,3 +442,92 @@ Projekat je razvijan kroz više smislenih commitova koji predstavljaju pojedina�
 - upload fotografija;
 - seederi;
 - dokumentacija.
+
+---
+
+## Dodatne funkcionalnosti
+
+Pored prethodno navedenih funkcionalnosti, u aplikaciju su dodate i sledeće mogućnosti:
+
+- javni pregled kategorija i vozila bez prijavljivanja;
+- izmena sopstvene rezervacije dok je u statusu `pending`;
+- pregled istorije rezervacija korisnika;
+- pregled rezervacija konkretnog vozila;
+- administratorska statistika rezervacija;
+- integracija sa NHTSA VPIC servisom za pregled modela vozila prema marki;
+- integracija sa Frankfurter servisom za pregled kursa valuta;
+- dodatne provere prilikom izmene rezervacije korišćenjem transakcije i `lockForUpdate`;
+- feature testovi za javne REST servise.
+
+### Dodatne API rute
+
+| Metoda | Ruta | Opis | Pristup |
+|---|---|---|---|
+| GET | `/api/categories` | Pregled kategorija | Javno |
+| GET | `/api/categories/{id}` | Pregled jedne kategorije | Javno |
+| GET | `/api/vehicles` | Pregled i filtriranje vozila | Javno |
+| GET | `/api/vehicles/{id}` | Pregled jednog vozila | Javno |
+| PUT | `/api/reservations/{reservation}` | Izmena rezervacije | Autentifikovan korisnik |
+| GET | `/api/users/{user}/reservations` | Istorija rezervacija korisnika | Autentifikovan korisnik |
+| GET | `/api/vehicles/{vehicle}/reservations` | Rezervacije konkretnog vozila | Autentifikovan korisnik |
+| GET | `/api/admin/statistics/rentals` | Statistika rezervacija | Admin |
+| GET | `/api/external/vehicles/models/{make}` | Modeli vozila prema marki | Javno |
+| GET | `/api/external/exchange/{from}/{to}` | Kurs između dve valute | Javno |
+
+### Javni REST servisi
+
+Za pribavljanje dodatnih podataka koriste se dva javna REST servisa.
+
+NHTSA VPIC servis koristi se za pregled modela vozila prema prosleđenoj marki:
+
+```text
+GET /api/external/vehicles/models/BMW
+```
+
+Frankfurter servis koristi se za pregled kursa između dve valute:
+
+```text
+GET /api/external/exchange/EUR/USD
+```
+
+Za ove rute nije potrebna autentifikacija.
+
+### Istorija i izmena rezervacija
+
+Prijavljeni korisnik može da izmeni rezervaciju preko rute:
+
+```text
+PUT /api/reservations/{reservation}
+```
+
+Customer može da menja samo svoju rezervaciju i to dok je rezervacija u statusu `pending`. Prilikom izmene ponovo se proveravaju dostupnost vozila i preklapanje termina, a ukupna cena se ponovo računa na serverskoj strani.
+
+Istorija rezervacija dostupna je preko rute:
+
+```text
+GET /api/users/{user}/reservations
+```
+
+Customer može da pregleda samo svoju istoriju rezervacija.
+
+### Administratorska statistika
+
+Administrator može da pristupi statistici preko rute:
+
+```text
+GET /api/admin/statistics/rentals
+```
+
+Statistika obuhvata ukupan broj rezervacija, broj završenih iznajmljivanja, ukupan prihod, broj rezervacija po statusu i najčešće iznajmljivana vozila.
+
+### Dodatno testiranje
+
+Za javne REST servise dodati su Laravel feature testovi korišćenjem `Http::fake`, tako da testovi ne zavise od trenutne dostupnosti eksternih servisa.
+
+Testovi se pokreću postojećom komandom:
+
+```bash
+php artisan test
+```
+
+Testirane su rute za NHTSA VPIC i Frankfurter servis, uključujući proveru HTTP statusa i JSON odgovora.
