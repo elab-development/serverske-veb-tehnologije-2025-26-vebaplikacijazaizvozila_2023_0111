@@ -356,4 +356,18 @@ class ReservationController extends Controller
 
         return response()->json($reservations);
     }
+    public function vehicleReservations(
+        Vehicle $vehicle
+    ): JsonResponse {
+        $reservations = Reservation::query()
+            ->where('vehicle_id', $vehicle->id)
+            ->with([
+             'user:id,name,email,role',
+             'vehicle.category',
+         ])
+         ->orderByDesc('start_date')
+         ->paginate(10);
+
+        return response()->json($reservations);
+}
 }
