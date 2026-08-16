@@ -8,7 +8,7 @@ Aplikacija omogućava upravljanje kategorijama i vozilima, registraciju i autent
 
 - Ime i prezime: `Vukašin Sandić`
 - Broj indeksa: `2023/0111`
-- Ime i prezime: `Deespot Mijajlović`
+- Ime i prezime: `Despot Mijajlović`
 - Broj indeksa: `2023/0341`
 
 ## Korišćene tehnologije
